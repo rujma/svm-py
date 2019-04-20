@@ -8,7 +8,7 @@ def model_accuracy ( y_true, y_pred ):
     tp, fp, fn, tn = confusion_matrix(y_true, y_pred).ravel()
     # Calculate the model accuracy
     accuracy = (tp + tn) / len(y_true)
-    miss_rate = 1 - accuracy
+    recall = tp / (tp + fn)
     # Return model accuracy
-    return [accuracy, miss_rate] 
+    return [accuracy, recall] 
 
