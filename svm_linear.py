@@ -2,9 +2,9 @@ print(__doc__)
 
 # Global imports
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn import svm
-import pandas as pd
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
@@ -22,42 +22,51 @@ y = DATA[:,2]
 X_train, X_test, y_train, y_test = split_dataset(X, y, 0.20)
 
 # fit the model, don't regularize for illustration purposes
-clf = svm.SVC(kernel='linear', C=100)
+clf = svm.SVC(kernel='linear', C=10)
 clf.fit(X_train, y_train)
 print('Support vectors: ', clf.support_vectors_)
+print('Rows: ', len(clf.support_vectors_))
+print('Columns: ', len(clf.support_vectors_[0]))
 print('Intercept: ', clf.intercept_)
 print('Dual Coef: ', clf.dual_coef_)
+print('Rows: ', len(clf.dual_coef_))
+print('Columns: ', len(clf.dual_coef_[0]))
 print('Coef: ', clf.coef_)
-#print('Func: ', clf.decision_function)
+print('Rows: ', len(clf.coef_))
+print('Columns: ', len(clf.coef_[0]))
+#print('Func: ', clf.   decision_function)
 
 eval_score = clf.score(X_test, y_test)
 print('Evaluation score: ', eval_score)
 cross_score = cross_val_score(clf, X_train, y_train, cv=5)
 print('Cross score: ', cross_score)
 
-print('Somatorio alphas: ', np.sum(clf.dual_coef_))
+print('Test set\n')
+print(*X_test, sep="\n")
+print(*y_test, sep="\n")
+#print('Somatorio alphas: ', np.sum(clf.dual_coef_))
 
-print('W.X + b')
-for i in range(0, len(X_test)):
-    result = clf.coef_[0,0]*X_test[i,0]+clf.coef_[0,1]*X_test[i,1] + clf.intercept_
-    print(result, y_test[i])
+#print('W.X + b')
+#for i in range(0, len(X_test)):
+#    result = clf.coef_[0,0]*X_test[i,0]+clf.coef_[0,1]*X_test[i,1] + clf.intercept_
+#    print(result, y_test[i])
 
-print('Alpha.K(x,x)')
-y_pred = []
-for i in range(0, len(X_test)):
-    result = np.dot(clf.support_vectors_, X_test[i])
-    result = np.dot(clf.dual_coef_, result)
-    result = result + clf.intercept_
-    if result > 0:
-        y_pred.append(1)
-    else:
-        y_pred.append(0)
+#print('Alpha.K(x,x)')
+#y_pred = []
+#for i in range(0, len(X_test)):
+#    result = np.dot(clf.support_vectors_, X_test[i])
+#    result = np.dot(clf.dual_coef_, result)
+#    result = result + clf.intercept_
+#    if result > 0:
+#        y_pred.append(1)
+#    else:
+#        y_pred.append(0)
 
-y_pred = np.array(y_pred)
-print(y_pred)
-print(y_test)
+#y_pred = np.array(y_pred)
+#print(y_pred)
+#print(y_test)
 
-print(model_accuracy(y_test, y_pred))
+#print(model_accuracy(y_test, y_pred))
 
 # scatter training data
 plt.scatter(X_train[:, 0], X_train[:, 1], c=y_train, s=30)
