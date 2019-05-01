@@ -47,7 +47,7 @@ X_train, X_test, y_train, y_test = split_dataset(X, y, 0.20)
 # Prepare for SVM
 #svmParams = {'kernel':['linear', 'poly'], 'C':[0.1,1,10],'gamma':[0.01,0.1,1]}
 #svmModel = GridSearchCV(svm.SVC(), svmParams, cv=5, n_jobs = -1)
-svmParams = {'kernel': 'rbf', 'C': 1, 'gamma': 1, 'degree': 3, 'coeff0': 1}
+svmParams = {'kernel': 'poly', 'C': 1, 'gamma': 0.1, 'degree': 3, 'coeff0': 1}
 svmModel = svm.SVC(kernel=svmParams['kernel'], C=svmParams['C'], gamma=svmParams['gamma'], degree=svmParams['degree'], coef0=svmParams['coeff0'])
 svmModel.fit(X_train, y_train)
 #print('Parameters after fit: ')
@@ -59,26 +59,26 @@ svmModel.fit(X_train, y_train)
 # Evaluate model accuracy
 cross_score = cross_val_score(svmModel, X_train, y_train, cv=5)
 print('Cross score: ', cross_score)
+# Infer about the test data using scikit-learn built in predict function
 y_pred = np.array(svmModel.predict(X_test))
 y_test = np.array(y_test)
 print('Model accuracy and recall: ', model_accuracy(y_test, y_pred))
 
-
-# Evaluate model accuracy with size reduction
+# Evaluate model accuracy with size reduction - Linear
 #y_pred_looped = kernel_linear(svmModel.support_vectors_, svmModel.dual_coef_, svmModel.intercept_, X_test)
 #print('Model accuracy and recall: ', model_accuracy(y_test, y_pred_looped))
 #error = np.mean( y_pred != y_pred_looped)
 #print('Difference between methods: ', error)
 
-# Evaluate model accuracy with size reduction
-#y_pred_looped = kernel_poly(svmModel.support_vectors_, svmModel.dual_coef_, svmModel.intercept_, svmParams['gamma'], svmParams['degree], svmParams['coeff0'], X_test)
-#print('Model accuracy and recall: ', model_accuracy(y_test, y_pred_looped))
-#error = np.mean( y_pred != y_pred_looped)
-#print('Difference between methods: ', error)
-
-# Evaluate model accuracy with size reduction
-y_pred_looped = kernel_rbf(svmModel.support_vectors_, svmModel.dual_coef_, svmModel.intercept_, svmParams['gamma'], X_test)
+# Evaluate model accuracy with size reduction - Poly
+y_pred_looped = kernel_poly(svmModel.support_vectors_, svmModel.dual_coef_, svmModel.intercept_, svmParams['gamma'], svmParams['degree'], svmParams['coeff0'], X_test)
 print('Model accuracy and recall: ', model_accuracy(y_test, y_pred_looped))
-error = np.mean( y_pred != np.array(y_pred_looped) )
+error = np.mean( y_pred != y_pred_looped)
 print('Difference between methods: ', error)
+
+# Evaluate model accuracy with size reduction - RBF
+#y_pred_looped = kernel_rbf(svmModel.support_vectors_, svmModel.dual_coef_, svmModel.intercept_, svmParams['gamma'], X_test)
+#print('Model accuracy and recall: ', model_accuracy(y_test, y_pred_looped))
+#error = np.mean( y_pred != np.array(y_pred_looped) )
+#print('Difference between methods: ', error)
 
