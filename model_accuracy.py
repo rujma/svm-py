@@ -9,6 +9,7 @@ def model_accuracy ( y_true, y_pred ):
     # Calculate the model accuracy
     accuracy = (tp + tn) / len(y_true)
     recall = tp / (tp + fn)
+    precision = tp / (tp + fp)
     # Return model accuracy
-    return [accuracy, recall] 
+    return [accuracy, recall, precision] 
 

@@ -1,0 +1,5 @@
+Features estao escaladas em valores muito baixos.
+Ideia:
+	Escalar as features de entrada por um fator de 1000
+	Aplicar standardizaçao ou normalizacao
+	Verificar se os valores se aproximam de valores pequenos decimais

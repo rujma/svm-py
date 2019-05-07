@@ -1,14 +1,14 @@
 import numpy as np
 from sklearn.metrics.pairwise import euclidean_distances
-from decimal import Decimal
 
 def kernel_linear(SV, Alphas, Bias, X_test):
 
     print('Alpha.K(x,x) - Linear')
     y_pred_looped = []
     for i in range(0, len(X_test)):
-        result = np.dot(SV, X_test[i])
-        result = np.dot(Alphas, result)
+        result = np.float16(np.dot(SV, X_test[i]))
+        result = np.int16(result)
+        result = np.int16(np.dot(Alphas, result))
         result = result + Bias
         if result > 0:
             y_pred_looped.append(1)
