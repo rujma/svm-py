@@ -1,5 +1,6 @@
 import numpy as np
 from sklearn.metrics.pairwise import euclidean_distances
+from decimal import Decimal
 
 def kernel_linear(SV, Alphas, Bias, X_test):
 
