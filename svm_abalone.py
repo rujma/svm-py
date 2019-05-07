@@ -70,7 +70,7 @@ X_train, X_test, y_train, y_test = split_dataset(X, y, 0.20)
 # Prepare for SVM
 #svmParams = {'kernel':['linear', 'poly', 'rbf'], 'C':[0.1,1,10],'gamma':[0.01,0.1,1]}
 #svmModel = GridSearchCV(svm.SVC(), svmParams, cv=5, n_jobs = -1)
-svmParams = {'kernel': 'linear', 'C': 10, 'gamma': 0.1, 'degree': 3, 'coeff0': 1}
+svmParams = {'kernel': 'linear', 'C': 1, 'gamma': 0.1, 'degree': 3, 'coeff0': 1}
 svmModel = svm.SVC(kernel=svmParams['kernel'], C=svmParams['C'], gamma=svmParams['gamma'], degree=svmParams['degree'], coef0=svmParams['coeff0'])
 svmModel.fit(X_train, y_train)
 #print('Parameters after fit: ', svmModel.best_params_)    
@@ -84,28 +84,20 @@ y_pred = np.array(svmModel.predict(X_test))
 y_test = np.array(y_test)
 accuracy, recall, precision = model_accuracy(y_test, y_pred)
 F1 = 2 * (precision * recall) / (precision + recall)
-print('Model accuracy and F1 score: ', np.around(accuracy, decimals=2), np.around(F1, decimals=2))
+print('Model accuracy and F1 score: ', accuracy, F1)
+
 # Size reduction to ease deployment on FPGA
-MULTIPLIER = 1
-SV = np.around(svmModel.support_vectors_ * MULTIPLIER, decimals=2)
+SV = np.around(svmModel.support_vectors_, decimals=2)
 Alphas = np.around(svmModel.dual_coef_, decimals=2)
-Bias = np.around(svmModel.intercept_ * MULTIPLIER, decimals=2)
+Bias = np.around(svmModel.intercept_, decimals=2)
 X_test = np.around(X_test, decimals=2)
 
-#SV = np.int16(svmModel.support_vectors_)
-#Alphas = np.int16(svmModel.dual_coef_)
-#Bias = np.int16(svmModel.intercept_)
-#X_test = np.int16(X_test)
-#print(X_test)
-
 # Evaluate models performance with different manually implemented kernels
-
 # Linear Kernel
 y_pred_looped = kernel_linear(SV, Alphas, Bias, X_test)
-#y_pred_looped = kernel_linear(svmModel.support_vectors_, svmModel.dual_coef_, svmModel.intercept_, X_test)
 accuracy, recall, precision = model_accuracy(y_test, y_pred_looped)
 F1 = 2 * (precision * recall) / (precision + recall)
-print('Model accuracy and F1: ', np.around(accuracy, decimals=2), np.around(F1, decimals=2))
+print('Model accuracy and F1: ', accuracy, F1)
 #error = np.mean( y_pred != y_pred_looped)
 #print('Difference between methods: ', error)
 
@@ -122,5 +114,17 @@ print('Model accuracy and F1: ', np.around(accuracy, decimals=2), np.around(F1, 
 #print('Difference between methods: ', error)
 
 # Save model parameters to file
-np.savetxt('test.out', SV, '%5.2f' ,delimiter=',')
+with open('test.out', 'a') as f:
+    svmfile = SV
+    np.savetxt(f, svmfile,'%5.2f', delimiter=',')
+    f.write("EOP")
+    f.write("\n")
+    svmfile = Alphas
+    np.savetxt(f, svmfile, '%5.0f', delimiter=',')
+    f.write("EOP")
+    f.write("\n")
+    svmfile = Bias
+    np.savetxt(f, svmfile,'%5.2f', delimiter=',')
+    f.write("EOP")
+    f.write("\n")
 

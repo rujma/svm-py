@@ -3,13 +3,14 @@ from sklearn.metrics.pairwise import euclidean_distances
 
 def kernel_linear(SV, Alphas, Bias, X_test):
 
+    SCALING_FACTOR = 100
     print('Alpha.K(x,x) - Linear')
     y_pred_looped = []
     for i in range(0, len(X_test)):
-        result = np.float16(np.dot(SV, X_test[i]))
-        result = np.int16(result)
-        result = np.int16(np.dot(Alphas, result))
-        result = result + Bias
+        result = np.float16(np.dot(SV, X_test[i])) * SCALING_FACTOR  # This is done in SW
+        result = np.int16(result) 
+        result = np.int16(np.dot(Alphas, result))  # This is done in HW
+        result = result + Bias * SCALING_FACTOR
         if result > 0:
             y_pred_looped.append(1)
         else:
