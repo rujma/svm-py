@@ -54,15 +54,37 @@ X_train, X_test, y_train, y_test = split_dataset(X, y, 0.20)
 # Scale data - Training isolated from test
 X_train = scale_data(X_train, type_of_scale='Standard')
 X_test = scale_data(X_test, type_of_scale='Standard')
+# Save test set to csv file
+#X_test_frame = pd.DataFrame(data=X_test, columns=X.columns)
+#y_test_frame = pd.DataFrame(data=np.array(y_test), columns=['Rings'])
+#test_data = pd.concat([X_test_frame, y_test_frame], axis=1)
+#test_data.to_csv('test_data_svm.csv', sep=',')
 # Prepare for SVM
-#svmParams = {'kernel':['rbf'], 'C':[0.1,1,10],'gamma':[1,2,3]}
-#svmModel = GridSearchCV(svm.SVC(), svmParams, cv=5, n_jobs = -1)
-svmParams = {'kernel': 'rbf', 'C': 1, 'gamma': 3, 'degree': 3, 'coeff0': 1}
-svmModel = svm.SVC(kernel=svmParams['kernel'], C=svmParams['C'], gamma=svmParams['gamma'], degree=svmParams['degree'], coef0=svmParams['coeff0'])
-svmModel.fit(X_train, y_train)
-#print('Parameters after fit: ', svmModel.best_params_)    
-print('Dual coef matrix: ', svmModel.dual_coef_.shape)
-print('Support vector matrix: ', svmModel.support_vectors_.shape)
+# Get model parameter via user input
+print('Model training\nKernel: auto, linear, poly or rbf\nC, Gamma, Degree and Coef parameters')
+Kernel = input("Kernel:")
+if Kernel == 'auto':
+    svmParams = {'kernel':['linear','poly','rbf'], 'C':[0.1,1,10],'gamma':[1,2,3], 'degree':[2,3]}
+    svmModel = GridSearchCV(svm.SVC(), svmParams, cv=5, n_jobs = -1)
+    # Train the model
+    svmModel.fit(X_train, y_train)
+    print('Parameters after fit: ', svmModel.best_params_) 
+else:
+    C = float(input("C:"))
+    Gamma = 1
+    Degree = 1
+    Coef = 1
+    if Kernel == 'poly':
+        Gamma = float(input("Gamma:"))
+        Degree = int(input("Degree:"))
+        Coef = int(input("Coef:"))
+    if Kernel == 'rbf':
+        Gamma = float(input("Gamma:"))
+    svmModel = svm.SVC(kernel=Kernel, C=C, gamma=Gamma, degree=Degree, coef0=Coef)
+    # Train the model
+    svmModel.fit(X_train, y_train)
+    print('Dual coef matrix: ', svmModel.dual_coef_.shape)
+    print('Support vector matrix: ', svmModel.support_vectors_.shape)
 # Evaluate model accuracy
 cross_score = cross_val_score(svmModel, X_train, y_train, cv=5)
 print('Cross score: ', cross_score)
@@ -72,12 +94,12 @@ y_test = np.array(y_test)
 accuracy, recall, precision = model_accuracy(y_test, y_pred)
 F1 = 2 * (precision * recall) / (precision + recall)
 print('Model accuracy and F1 score: ', accuracy, F1)
-# Size reduction to ease deployment on FPGA
-SV = np.float16(np.around(svmModel.support_vectors_, decimals=3))
-Alphas = svmModel.dual_coef_
-Bias = np.float16(np.around(svmModel.intercept_, decimals=3))
-X_test = np.float16(np.around(X_test, decimals=3))
-
+if Kernel != 'auto':
+    # Size reduction to ease deployment on FPGA
+    SV = np.float16(np.around(svmModel.support_vectors_, decimals=3))
+    Alphas = svmModel.dual_coef_
+    Bias = np.float16(np.around(svmModel.intercept_, decimals=3))
+    X_test = np.float16(np.around(X_test, decimals=3))
 # Evaluate models performance with different manually implemented kernels
 # Linear Kernel
 #y_pred_looped = kernel_linear(SV, Alphas, Bias, X_test)
@@ -92,17 +114,17 @@ X_test = np.float16(np.around(X_test, decimals=3))
 #print('Model accuracy and F1: ', accuracy, F1)
 
 # RBF Kernel
-y_pred_looped = kernel_rbf(SV, Alphas, Bias, svmParams['gamma'], X_test)
-accuracy, recall, precision = model_accuracy(y_test, y_pred_looped)
-F1 = 2 * (precision * recall) / (precision + recall)
-print('Model accuracy and F1: ', accuracy, F1)
+#y_pred_looped = kernel_rbf(SV, Alphas, Bias, svmParams['gamma'], X_test)
+#accuracy, recall, precision = model_accuracy(y_test, y_pred_looped)
+#F1 = 2 * (precision * recall) / (precision + recall)
+#print('Model accuracy and F1: ', accuracy, F1)
 
 # Save model parameters to file
-if svmParams['kernel'] == 'linear':
+if Kernel == 'linear':
     save_model_linear(SV, Alphas, Bias)
-if svmParams['kernel'] == 'poly':
-    save_model_poly(SV, Alphas, Bias, svmParams['gamma'], svmParams['degree'])
-if svmParams['kernel'] == 'rbf':
-    save_model_rbf(SV, Alphas, Bias, svmParams['gamma'])
+if Kernel == 'poly':
+    save_model_poly(SV, Alphas, Bias, Gamma, Degree)
+if Kernel == 'rbf':
+    save_model_rbf(SV, Alphas, Bias, Gamma)
 
 
